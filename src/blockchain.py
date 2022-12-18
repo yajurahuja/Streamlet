@@ -4,9 +4,12 @@ class blockchain:
     def __init__(self, initial_block):
         self.blocks = [initial_block]
 
-    def block_validity(self, block, prev_block):
+    def block_validity(self, block, prev_block, hasher):
         #assert block is not genesis block
-        assert block.h != "-1", 'This is the genesis block!'
+        assert block.parent != "-1", 'This is the genesis block!'
+        hasher.update(bytes(prev_block))
+        assert block.parent == hasher.finalize() and block.epoch > prev_block.epoch, "Block is invaild!"
+
 
     def chain_validity(self):
         for index, block in enumerate(self.blocks[1:]):

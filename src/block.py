@@ -7,6 +7,10 @@ class block:
         self.txs = txs #list of transactions
         self.meta_data = meta_data() #any meta data to store 
 
+    def __bytes__(self):
+        sig_str = "{} {} {}".format(self.parent, self.epoch, self.txs)
+        return bytes(sig_str, 'utf-8')
+
     def signature_encode(self):
         #TODO
         sig_str = "{} {} {}".format(self.parent, self.epoch, self.txs)
@@ -30,9 +34,7 @@ class block:
 if __name__ == "__main__":
     b1 = block("123", 1, ["hey", "hello", "how are you"])
     b2 = block("123", 1, ["hey", "hello", "how are you"])
-    assert b1.isequal(b2) 
-    l = b1.signature_encode()
-    print(l.decode())
+    print(bytes(b1))
 
 
 
