@@ -3,3 +3,5 @@ class vote:
         self.votes = votes
         self.block = block
         self.id = id_
+
+    

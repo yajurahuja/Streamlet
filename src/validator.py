@@ -40,8 +40,11 @@ class validator:
         signed_block = None
         return signed_block
 
-    def receive_proposed_block(self):
+    def receive_proposed_block(self, leader_public_key, vote, node_count):
         #TODO: 
+        assert self.get_epoch_leader(node_count) == vote.id, "Vote ID doesn't match"
+        
+
 
     def can_extend_notarized_blockchain(self, blockchain):
         for block in blockchain.blocks[:-1]:
