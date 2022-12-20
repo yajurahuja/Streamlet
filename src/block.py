@@ -25,11 +25,10 @@ class block:
     def isequal(self, other):
         return self.parent == other.parent and self.epoch == other.epoch and self.compare_txs(other.txs)
 
-    def hash(self, hasher):
-        #TODO: figure out hashing
-        block_str = str((self.parent, self.epoch, self.txs))
-        hasher.update(block_str)
-        return hasher.finalize
+    def get_hash(self, common_hash):
+        h = common_hash.get_hasher()
+        h.update(bytes(self))
+        return h.finalize
 
 if __name__ == "__main__":
     b1 = block("123", 1, ["hey", "hello", "how are you"])
