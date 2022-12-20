@@ -3,12 +3,12 @@ class validator:
         self.id = id
         self.genesis_time = genesis_time
         self.keypair = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        self.canonical_blockchain = blockchain(init_block)
+        self.final_blockchain = blockchain(init_block)
         self.validator_blockchains = []
         self.new_transactions = []
 
     def output(self):
-        self.canonical_blockchain
+        self.final_blockchain
     
     def add_transaction(self, transaction):
         self.new_transactions.append(transactions)
@@ -22,12 +22,16 @@ class validator:
         return self.genesis_time / (2 * delta)
 
     def is_epoch_leader(self, validator_count):
-        leader = self.get_epoch_leader(validator_count)
-        self.id = leader
+        retunn self.id == self.get_epoch_leader(validator_count)
 
     def get_new_transactions(self):
-        #TODO
-        return False
+        new_transactions = copy.deepcopy(self.new_transactions)
+        for blockchain in self.validator_blockchains:
+            for block  in blockchain.blocks:
+                for transactions in block.txs:
+
+         
+        return new_transactions
 
     def propose_block(self):
         epoch = self.get_current_epoch()
@@ -43,7 +47,7 @@ class validator:
     def receive_proposed_block(self, leader_public_key, vote, node_count):
         #TODO: 
         assert self.get_epoch_leader(node_count) == vote.id, "Vote ID doesn't match"
-        
+        Verifier = 
 
 
     def can_extend_notarized_blockchain(self, blockchain):
@@ -53,9 +57,36 @@ class validator:
         return True
 
     def find_blockchain_index(self, block):
-        h = None#TODO: Create Hasher 
+        h = None #TODO: Create Hasher 
         for index, blockchain in enumerate(self.validator_blockchains):
             last_block = blockchain.blocks[-1]
             
+    def find_block(self, vote_block):
+        for index, blockchain in enumerate(self.validator_blockchains):
+            for block in blockchain.blocks.reverse():
+                if block == vote_block:
+                    return (block, index)
+        
+        for block in self.final_blockchain.blocks.reverse():
+            if vote_block == block:
+                return (block, -1)
+
+        return None
+
+    def find_longest_finalized_chain(self):
+        longest_notarized_chain = self.final_blockchain
+        length = 0
+        for blockchain in self.validator_blockchains:
+            if blockchain.is_notarized() and len(blockchain.blocks) > length:
+                longest_notarized_chain = blockchain
+                length = len(blockchain.blocks)
+        return longest_notarized_chain
+
+    def receive_vote(self, public_key, vote, count):
+        
+
+    def finalize_blockchain
+    
+
 
 
