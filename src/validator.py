@@ -1,11 +1,12 @@
 class validator:
-    def __init__(self, id, genesis_time, init_block):
+    def __init__(self, id, genesis_time, init_block, common_hash):
         self.id = id
         self.genesis_time = genesis_time
         self.keypair = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         self.final_blockchain = blockchain(init_block)
         self.validator_blockchains = []
         self.new_transactions = []
+        self.hash = common_hash
 
     def output(self):
         self.final_blockchain
@@ -20,6 +21,13 @@ class validator:
     def get_current_epoch(self, delta):
         #TODO: fix time passing reference
         return self.genesis_time / (2 * delta)
+
+    def epoch_leader(self, numberValidators):
+        epoch = self.get_current_epoch()
+        hasher = self.common_hash.get_hasher()
+        hasher.update(str(epoch))
+        return hasher.finalize() % numberValidators
+
 
     def is_epoch_leader(self, validator_count):
         retunn self.id == self.get_epoch_leader(validator_count)
@@ -49,7 +57,7 @@ class validator:
     def receive_proposed_block(self, leader_public_key, vote, node_count):
         #TODO: 
         assert self.get_epoch_leader(node_count) == vote.id, "Vote ID doesn't match"
-        Verifier = 
+        verifier = 
 
 
     def can_extend_notarized_blockchain(self, blockchain):
@@ -106,8 +114,21 @@ class validator:
             for block in blockchain.blocks[:notarized]:
                 block.meta_data.finalized = True
                 finalized_blocks.append(copy.deepcopy(block))
-                for transactions in block.txs:
+                for transaction in block.txs:
+                    if transaction in self.new_transactions:
+                        index = self.new_transactions.find(transaction)
+                        self.new_transactions.remove(index)
+            blockchain.blocks = blockchain.blocks[:notarized]
+            for block in finalized_blocks:
+                self.final_blockchain.blocks.append(copy.deepcopy(block))
+            hasher = self.common_hash.get_hasher()
+            tip = self.final_blockchain[-1]
+            hasher.update(bytes(tip))
+            tip_hash = str(hasher.finalize())
+    }
 
+
+        
             
 
 
