@@ -30,6 +30,21 @@ class block:
         h.update(bytes(self))
         return h.finalize
 
+    def check_vote(self, vote):
+        self.meta_data.check_vote()
+
+    def add_vote(self, vote):
+        self.meta_data.votes.append(votes)
+
+    def get_vote_count(self):
+        return len(self.meta_data.votes)
+
+    def notarize(self):
+        self.meta_data.notarized = True
+        
+    def is_notarized(self):
+        return self.meta_data.is_notarized()
+
 if __name__ == "__main__":
     b1 = block("123", 1, ["hey", "hello", "how are you"])
     b2 = block("123", 1, ["hey", "hello", "how are you"])

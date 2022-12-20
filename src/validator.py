@@ -141,6 +141,8 @@ class validator:
                 length = blockchain.length()
         return longest_notarized_chain
 
+
+
     def vote(self, public_key, proposed_block, count_validators):
         
         #TODO: create verifier fro m public key
@@ -150,6 +152,26 @@ class validator:
         if block == None:
             print("Unknown Block!")
         self.vote_for(proposed_block)
+
+    #leader functionality
+    def vote_respose(self, public_key, vote, validator_count):
+        self.verify_signature()
+        ret = self.find_block(vote.block)
+        if ret == None:
+            print("Block not found!")
+        else: 
+            block, index = self.find_block(vote.block)
+            if not block.check_vote(vote):
+                block.add_vote(copy.deepcopy(vote))
+
+            if block.is_notarized() and block.get_vote_count() > (2 * validator_count / 3):
+                block.notarize()
+                self.finalize_blockchain(self, index)
+        return
+        
+            
+            
+
 
     
 
