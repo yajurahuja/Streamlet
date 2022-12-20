@@ -28,9 +28,11 @@ class validator:
         new_transactions = copy.deepcopy(self.new_transactions)
         for blockchain in self.validator_blockchains:
             for block  in blockchain.blocks:
-                for transactions in block.txs:
+                for transaction in block.txs:
+                    if transaction in new_transactions:
+                        index = new_transactions.index(transaction)
+                        new_transactions.remove(index)
 
-         
         return new_transactions
 
     def propose_block(self):
@@ -83,9 +85,34 @@ class validator:
         return longest_notarized_chain
 
     def receive_vote(self, public_key, vote, count):
-        
 
-    def finalize_blockchain
+
+    def finalize_blockchain(self, bc)
+    {
+        blockchain = None
+        if bc == -1:
+            blockchain = self.final_blockchain
+        else:
+            blockchain = self.validator_blockchains[bc]
+        notarized = 0
+        if blockchain.length() > 2:
+            for block in blockchain.blocks():
+                if block.meta_data.is_notarized():
+                    notarized += 1
+                else:
+                    break
+        if notarized > 2:
+            finalized_blocks = []
+            for block in blockchain.blocks[:notarized]:
+                block.meta_data.finalized = True
+                finalized_blocks.append(copy.deepcopy(block))
+                for transactions in block.txs:
+
+            
+
+
+
+    }
     
 
 
