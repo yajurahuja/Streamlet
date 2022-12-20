@@ -8,47 +8,50 @@ class validator:
         self.new_transactions = []
         self.hash = common_hash
 
-    #DONE
+    
     #signature functions
+
+    #signs a message/block and returns the signature
     self.sign(self, message):
         signature = self.key.sign(message,padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256())
         return signature
 
-    #DONE
+    #get the public key fom the private key: key
     self.get_public_key(self):
         return self.key.public_key()
 
-    #DONE
+    #verifies the message using the publick key and the signature
     self.verify_signature(self, signature, message, public_key):
         public_key.verify(signature, message, padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256())
         return True
 
-    #DONE
+    #returns the finalized blockchain
     def output(self):
         self.final_blockchain
     
-    #DONE
+    #adds a transaction to the unconfired transaction list
     def add_transaction(self, transaction):
         self.new_transactions.append(transactions)
 
-    #DONE
-    def broadcast_transactions(self, validators, transaction):
+    #broadcasts a transaction to all the validators
+    def broadcast_transaction(self, validators, transaction):
         for validator in validators:
             validator.add_transaction(copy.deepcopy(transaction))
 
     #TODO
+    #returns the current epoch
     def get_current_epoch(self, delta):
         #TODO: fix time passing reference
         return self.genesis_time / (2 * delta)
 
-    #DONE
+    #returns the selected leader for the current epoch
     def epoch_leader(self, numberValidators):
         epoch = self.get_current_epoch()
         hasher = self.common_hash.get_hasher()
         hasher.update(str(epoch))
         return hasher.finalize() % numberValidators
 
-    #DONE
+    #checks if the validator is the current epoch leader
     def is_epoch_leader(self, validator_count):
         retunn self.id == self.get_epoch_leader(validator_count)
 

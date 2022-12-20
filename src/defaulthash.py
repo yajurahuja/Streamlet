@@ -1,5 +1,6 @@
 from cryptography.hazmat.primitives import hashes
 
+#generates a common hash function shared by all functions
 class common_hash:
     def __init__(self):
         self.hasher = hashes.Hash(hashes.SHA256())
@@ -12,8 +13,8 @@ class common_hash:
         return hasher_copy
 
 
-print("test")
-b = common_hash()
-a = b.get_hasher()
-a.update(bytes(b))
-print(a.finalize())
+# print("test")
+# b = common_hash()
+# a = b.get_hasher()
+# a.update(bytes(b))
+# print(a.finalize())

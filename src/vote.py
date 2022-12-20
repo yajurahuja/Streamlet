@@ -7,6 +7,6 @@ class vote:
     def isequal(self, vote):
         return self.signature == vote.signature and self.block.isequal(vote.block) and self.id == vote.id
 
-        
+    
     
     
