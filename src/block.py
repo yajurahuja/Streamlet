@@ -55,6 +55,12 @@ class block:
     def is_notarized(self):
         return self.meta_data.is_notarized()
 
+    def finalize(self):
+        self.meta_data.finalized = True
+    
+    def is_finalized(self):
+        return self.meta_data.finalized
+
 if __name__ == "__main__":
     b1 = block("123", 1, ["hey", "hello", "how are you"])
     b2 = block("123", 1, ["hey", "hello", "how are you"])

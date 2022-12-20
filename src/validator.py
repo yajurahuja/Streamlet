@@ -47,7 +47,7 @@ class validator:
     #returns the selected leader for the current epoch
     def epoch_leader(self, numberValidators):
         epoch = self.get_current_epoch()
-        hasher = self.common_hash.get_hasher()
+        hasher = self.hash.get_hasher()
         hasher.update(str(epoch))
         return hasher.finalize() % numberValidators
 
@@ -55,44 +55,53 @@ class validator:
     def is_epoch_leader(self, validator_count):
         retunn self.id == self.get_epoch_leader(validator_count)
 
-    #DONE
+   #returns the set of transactions not present in any blockchain
     def get_unconfirmed_transactions(self):
         txs = copy.deepcopy(self.new_transactions)
         for blockchain in self.validator_blockchains:
             for block in blockchain.blocks:
                 for transaction in block.txs:
                     if transaction in txs: #remove transactions if already confirmed in prev blocks
-                        index = new_transactions.index(transaction)
-                        txs_transactions.remove(index)
+                        txs.remove(transaction)
 
-        return new_transactions
+        return txs
 
-    #DONE
+    #returns the longest of the validator blockchains which has been notaized
+    def longest_notarized_chain(self):
+        longest_chain = self.final_blockchain
+        length = 0
+        for chain in self.validator_blockchains:
+            if chain.is_notarized() and chain.length() > length:
+                longest_chain = chain
+                length = chain.length()
+        return longest_chain
+
     #leader function
-    def block_proposal(self):
-        longest_notarized_chain = self.get_longest_notarized_chain()
-        proposed_block = block(str(hasher.finalize()),self.get_current_epoch(),  self.get_new_transactions())
-        signature = self.sign(bytes(proposed_block))
-        return (self.get_public_key(), Vote(signature, proposed_block, self.id))
+    #as the leader propose a block to be added to the blockchain
+    def propose_block(self):
+        longest_notarized_chain = self.longest_notarized_chain()
+        proposed_block = block(longest_notarized_chain[-1].get_hash(self.hash), self.get_current_epoch(),  self.get_unconfirmed_transactions())
+        signature = self.sign(bytes(proposed_block)) #sign the proposed block
+        return (self.get_public_key(), vote(signature, proposed_block, self.id)) #send the block proposal as a vote
 
-    #DONE
-    def receive_proposed_block(self, leader_public_key, vote, node_count):
-        #TODO: 
+    #validator receives a block proposal, verifies the proposal and votes
+    def voting_proposed_block(self, leader_public_key, vote, node_count):
         assert self.get_epoch_leader(node_count) == vote.id, "Vote ID doesn't match"
         self.verify_signature(self, vote.signature, bytes(vote.block), leader_public_key)
-        return self.vote(vote.block)
+        return self.vote_for(vote.block)
 
-    #DONE
-    def vote(self, block):
-        index = self.get_blockchain_index(block)
+    #validator vote function
+    def vote_for(self, block):
+        index = self.get_blockchain(block)
         current_chain = None
-        #if block not found
+        #case where no block is found
         if index == -1:
             current_chain = blockchain(copy.deepcopy(block))
             self.validator_blockchains.append(current_chain)
         else:
+            self.validator_blockchains[index].add_block(copy.deepcopy(block))
             current_chain = self.validator_blockchains[index]
-        
+
         Vote = None
         if self.is_blockchain_notarized(current_chain):
             new_block = copy.deepcopy(block)
@@ -101,69 +110,47 @@ class validator:
         return Vote
 
 
-    #DONE
+    #verifies of the blockchain is notarized without the last block
     def is_blockchain_notarized(self, blockchain):
         for block in blockchain.blocks[:-1]:
-            if not block.meta_data.is_notarized():
+            if not block.is_notarized():
                 return False
         return True
 
-    #DONE
-    def get_blockchain_index(self, block):
+    #returns the blockchain whose tip is the given block 
+    def get_blockchain(self, block):
         for index, blockchain in enumerate(self.validator_blockchains):
             chain_tip = blockchain.blocks[-1]
-            if block.parent == chain_tip.get_hash(self.common_hash) and block.epoch > chain_tip.epoch:
+            if block.parent == chain_tip.get_hash(self.hash) and block.epoch > chain_tip.epoch:
                 return index
         chain_tip = self.final_blockchain.blocks[-1]
-        if not (last_block.get_hash(self.common_hash) == block.parent and block.epoch > chain_tip.epoch):
+        if not (chain_tip.get_hash(self.hash) == block.parent and block.epoch > chain_tip.epoch):
             print("get blockchain_index error")
             return -1
             
 
-    #DONE
+    #find the chain in which the block lies
     def find_block(self, vote_block):
         for index, blockchain in enumerate(self.validator_blockchains):
             for block in blockchain.blocks.reverse():
-                if block == vote_block:
+                if vote_block.isequal(block):
                     return (block, index)
         
         for block in self.final_blockchain.blocks.reverse():
-            if vote_block == block:
+            if vote_block.isequal(block):
                 return (block, -1)
 
         return None
 
-
-    #DONE
-    def find_longest_finalized_chain(self):
-        longest_notarized_chain = self.final_blockchain
-        length = 0
-        for blockchain in self.validator_blockchains:
-            if blockchain.is_notarized() and blockchain.length() > length:
-                longest_notarized_chain = blockchain
-                length = blockchain.length()
-        return longest_notarized_chain
-
-
-
-    def vote(self, public_key, proposed_block, count_validators):
-        
-        #TODO: create verifier fro m public key
-        #and verify vote
-        assert 
-        block = self.find_block(vote.block)
-        if block == None:
-            print("Unknown Block!")
-        self.vote_for(proposed_block)
-
     #leader functionality
-    def vote_respose(self, public_key, vote, validator_count):
-        self.verify_signature()
+    #add votes received by the leader to the corresponding block
+    def vote_receive(self, public_key, vote, validator_count):
+        self.verify_signature(vote.signature,  bytes(vote.block), public_key)
         ret = self.find_block(vote.block)
         if ret == None:
             print("Block not found!")
         else: 
-            block, index = self.find_block(vote.block)
+            block, index = ret
             if not block.check_vote(vote):
                 block.add_vote(copy.deepcopy(vote))
 
@@ -173,11 +160,6 @@ class validator:
         return
         
             
-            
-
-
-    
-
     #DONE
     def finalize_blockchain(self, bc)
     {
@@ -188,27 +170,33 @@ class validator:
             blockchain = self.validator_blockchains[bc]
         notarized = 0
         if blockchain.length() > 2:
-            for block in blockchain.blocks():
-                if block.meta_data.is_notarized():
+            for block in blockchain.blocks:
+                if block.is_notarized():
                     notarized += 1
                 else:
                     break
-        if notarized > 2:
-            finalized_blocks = []
-            for block in blockchain.blocks[:notarized]:
-                block.meta_data.finalized = True
-                finalized_blocks.append(copy.deepcopy(block))
-                for transaction in block.txs:
-                    if transaction in self.new_transactions:
-                        index = self.new_transactions.find(transaction)
-                        self.new_transactions.remove(index)
-            blockchain.blocks = blockchain.blocks[:notarized]
-            for block in finalized_blocks:
-                self.final_blockchain.blocks.append(copy.deepcopy(block))
-            hasher = self.common_hash.get_hasher()
-            tip = self.final_blockchain[-1]
-            hasher.update(bytes(tip))
-            tip_hash = str(hasher.finalize())
+            if notarized > 2:
+                finalized_blocks = []
+                for block in blockchain.blocks[:notarized]:
+                    block.finalize()
+                    finalized_blocks.add_block(copy.deepcopy(block))
+                    for transaction in block.txs:
+                        if transaction in self.new_transactions:
+                            self.new_transactions.remove(transaction)
+                blockchain.blocks = blockchain.blocks[:notarized]
+                for block in finalized_blocks:
+                    self.final_blockchain.blocks.add_block(copy.deepcopy(block))
+                tip = self.final_blockchain[-1]
+
+                tip_hash = tip.get_hash(self.hash)
+                remove_chains = []
+                for index, chains in enumerate(self.validator_blockchains):
+                    if blockchain.blocks[0].parent == tip_hash and blockchain.blocks[0].epoch > tip.epoch:
+                        retain_chains.append(index)
+                updated_validator_blockchains = []
+                for i in retain_chains:
+                    updated_validator_blockchains.append(self.validator_blockchains[i])
+                self.validator_blockchains = updated_validator_blockchains 
     }
 
 

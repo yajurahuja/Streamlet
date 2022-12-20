@@ -32,4 +32,8 @@ class blockchain:
                 return False
             return True
 
+    #returns the length of the current blockchain
+    def length(self):
+        return len(self.blocks)
+
         
