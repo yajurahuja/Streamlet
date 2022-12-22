@@ -1,4 +1,5 @@
 import copy
+from block import block
 
 class blockchain:
     def __init__(self, initial_block):

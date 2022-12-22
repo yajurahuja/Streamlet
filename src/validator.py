@@ -1,5 +1,17 @@
+import copy
+import time
+from cryptography.hazmat.primitives import hashes #for the hash function
+from cryptography.hazmat.primitives.asymmetric import rsa #for private and public keys
+from cryptography.hazmat.primitives.asymmetric import padding #for padding
+from defaulthash import common_hash
+from blockchain import blockchain
+from vote import vote
+from block import block
+
+
+
 class validator:
-    def __init__(self, id, genesis_time, init_block, common_hash):
+    def __init__(self, id, genesis_time, init_block, common_hash, delta):
         self.id = id
         self.genesis_time = genesis_time
         self.key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -7,21 +19,22 @@ class validator:
         self.validator_blockchains = []
         self.new_transactions = []
         self.hash = common_hash
+        self.delta = delta
 
     
     #signature functions
 
     #signs a message/block and returns the signature
-    self.sign(self, message):
+    def sign(self, message):
         signature = self.key.sign(message,padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256())
         return signature
 
     #get the public key fom the private key: key
-    self.get_public_key(self):
+    def get_public_key(self):
         return self.key.public_key()
 
     #verifies the message using the publick key and the signature
-    self.verify_signature(self, signature, message, public_key):
+    def verify_signature(self, signature, message, public_key):
         public_key.verify(signature, message, padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256())
         return True
 
@@ -31,29 +44,31 @@ class validator:
     
     #adds a transaction to the unconfired transaction list
     def add_transaction(self, transaction):
-        self.new_transactions.append(transactions)
+        self.new_transactions.append(transaction)
 
     #broadcasts a transaction to all the validators
     def broadcast_transaction(self, validators, transaction):
         for validator in validators:
             validator.add_transaction(copy.deepcopy(transaction))
 
-    #TODO
     #returns the current epoch
-    def get_current_epoch(self, delta):
+    def get_current_epoch(self):
         #TODO: fix time passing reference
-        return self.genesis_time / (2 * delta)
+        return (time.time() - self.genesis_time) / (2 * self.delta)
 
     #returns the selected leader for the current epoch
     def epoch_leader(self, numberValidators):
         epoch = self.get_current_epoch()
-        hasher = self.hash.get_hasher()
-        hasher.update(str(epoch))
-        return hasher.finalize() % numberValidators
+        # hasher = self.hash.get_hasher()
+        # hasher.update(bytes(str(epoch), 'utf-8'))
+        # hash_val = hasher.finalize()
+        # print(hash_val)
+        # print(str(hash_val) % numberValidators)
+        return  int(epoch * 10) % numberValidators
 
     #checks if the validator is the current epoch leader
     def is_epoch_leader(self, validator_count):
-        retunn self.id == self.get_epoch_leader(validator_count)
+        return self.id == self.epoch_leader(validator_count)
 
    #returns the set of transactions not present in any blockchain
     def get_unconfirmed_transactions(self):
@@ -80,7 +95,7 @@ class validator:
     #as the leader propose a block to be added to the blockchain
     def propose_block(self):
         longest_notarized_chain = self.longest_notarized_chain()
-        proposed_block = block(longest_notarized_chain[-1].get_hash(self.hash), self.get_current_epoch(),  self.get_unconfirmed_transactions())
+        proposed_block = block(longest_notarized_chain.blocks[-1].get_hash(self.hash), self.get_current_epoch(),  self.get_unconfirmed_transactions())
         signature = self.sign(bytes(proposed_block)) #sign the proposed block
         return (self.get_public_key(), vote(signature, proposed_block, self.id)) #send the block proposal as a vote
 
@@ -160,9 +175,8 @@ class validator:
         return
         
             
-    #DONE
-    def finalize_blockchain(self, bc)
-    {
+    #finalizes the block chain
+    def finalize_blockchain(self, bc):
         blockchain = None
         if bc == -1:
             blockchain = self.final_blockchain
@@ -197,6 +211,6 @@ class validator:
                 for i in retain_chains:
                     updated_validator_blockchains.append(self.validator_blockchains[i])
                 self.validator_blockchains = updated_validator_blockchains 
-    }
+    
 
 

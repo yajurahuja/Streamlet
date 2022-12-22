@@ -17,4 +17,4 @@ class common_hash:
 # b = common_hash()
 # a = b.get_hasher()
 # a.update(bytes(b))
-# print(a.finalize())
+# print(a.finalize()) 

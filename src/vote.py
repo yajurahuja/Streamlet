@@ -1,3 +1,4 @@
+from block import block
 class vote:
     def __init__(self, signature, block, id_):
         self.signature = signature
@@ -7,6 +8,12 @@ class vote:
     def isequal(self, vote):
         return self.signature == vote.signature and self.block.isequal(vote.block) and self.id == vote.id
 
+    def print_(self):
+        print("leader who proposed the block: ", self.id)
+        self.block.print_()
+        print("Proposal signature: ", self.signature)
+        
+        
     
     
     
