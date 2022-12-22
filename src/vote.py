@@ -11,7 +11,7 @@ class vote:
     def print_(self):
         print("leader who proposed the block: ", self.id)
         self.block.print_()
-        print("Proposal signature: ", self.signature)
+        #print("Proposal signature: ", self.signature)
         
         
     

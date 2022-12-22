@@ -22,8 +22,8 @@ class blockchain:
             self.block_validity(block, self.blocks[index])
 
     #first checks the validity of the block and if the block is valid, it adds it to the block chain in the end
-    def add_block(self, block):
-        self.block_validity(block, self.blocks[-1])
+    def add_block(self, block, common_hash):
+        self.block_validity(block, self.blocks[-1], common_hash)
         self.blocks.append(copy.deepcopy(block))
 
     #checks if the complete block chain is notarized. It does so by checking each block in the chain

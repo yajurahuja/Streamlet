@@ -1,5 +1,5 @@
 from meta_data import meta_data
-
+import copy
 class block:
     def __init__(self, parent, epoch, txs):
         self.parent = parent #stores the parent hash
@@ -11,7 +11,7 @@ class block:
     def print_(self):
         print("Epoch: ", self.epoch)
         print("txs: ", self.txs)
-        print("parent sig: ", self.parent)
+        #print("parent sig: ", self.parent)
 
     #returns the instance string in the bytes format when the bytes() function is called
     def __bytes__(self):
@@ -39,7 +39,7 @@ class block:
     def get_hash(self, common_hash):
         h = common_hash.get_hasher()
         h.update(bytes(self))
-        return h.finalize
+        return h.finalize()
 
     #check if the vote already exists in the vote list
     def check_vote(self, vote):
@@ -47,7 +47,7 @@ class block:
 
     #adds the vote to the vote list of the block
     def add_vote(self, vote):
-        self.meta_data.votes.append(votes)
+        self.meta_data.votes.append(vote)
 
     #gets the vote count for the block
     def get_vote_count(self):
@@ -68,9 +68,10 @@ class block:
         return self.meta_data.finalized
 
 # if __name__ == "__main__":
-#     b1 = block("123", 1, ["hey", "hello", "how are you"])
-#     b2 = block("123", 1, ["hey", "hello", "how are you"])
-#     print(bytes(b1))
+    # b1 = block("123", 1, ["hey", "hello", "how are you"])
+    # b2 = block("123", 1, ["hey", "hello", "how are you"])
+    # b3 = copy.deepcopy(b2)
+    # print(bytes(b1))
 
 
 

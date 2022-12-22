@@ -25,14 +25,15 @@ v2 = validator(2, genesis_time, copy.deepcopy(genesis_block), common_hash_, delt
 validators = [v0, v1, v2] 
 validator_count = len(validators)
 
+##ROUND 1
+#sleep for a while
+time.sleep(10)
+
+
+#add transactions
 txs0 = "transaction 0"
 txs1 = "transaction 1"
 txs2 = "transaction 2"
-
-#sleep for a while
-time.sleep(5)
-
-#add transactions
 v0.add_transaction(txs0)
 v0.broadcast_transaction([v1, v2], txs0)
 v1.add_transaction(txs1)
@@ -41,17 +42,139 @@ v2.add_transaction(txs2)
 v2.broadcast_transaction([v0, v1], txs2)
 
 #test transactions
-transactions = ['transaction 0', 'transaction 1', 'transaction 2']
-assert v0.new_transactions == transactions, "transactions don't match"
-assert v1.new_transactions == transactions, "transactions don't match"
-assert v2.new_transactions == transactions, "transactions don't match"
+transactions = [txs0, txs1, txs2]
+assert v0.get_unconfirmed_transactions() == transactions, "transactions don't match"
+assert v1.get_unconfirmed_transactions() == transactions, "transactions don't match"
+assert v2.get_unconfirmed_transactions() == transactions, "transactions don't match"
 
 
+#leader proposes block
 leader_public_key = None
-block = None
+proposal = None
 for v in validators:
     if v.is_epoch_leader(validator_count):
-        leader_public_key, block = v.propose_block()
+        leader_public_key, proposal = v.propose_block()
+        break
+proposal.print_()
 
-block.print_()
+#send the proposed block to all other validators and voting beings
 
+votes = []
+for v in validators:
+    votes.append(v.voting_proposed_block(leader_public_key, proposal, validator_count))
+
+
+#broadcast votes
+for v in validators:
+    for i in range(len(votes)):
+        v.vote_receive(validators[i].get_public_key(), votes[i], validator_count)
+
+#print blockchains
+for v in validators:
+    print(v.id)
+    print(v.final_blockchain)
+    print(v.validator_blockchains)
+
+
+##ROUND 2
+#sleep for a while
+time.sleep(10)
+
+#add transactions
+txs4 = "transaction 4"
+txs5 = "transaction 5"
+txs6 = "transaction 6"
+v0.add_transaction(txs4)
+v0.broadcast_transaction([v1, v2], txs4)
+v1.add_transaction(txs5)
+v1.broadcast_transaction([v0, v2], txs5)
+v2.add_transaction(txs6)
+v2.broadcast_transaction([v0, v1], txs6)
+
+
+#check if transactions match
+transactions = [txs4, txs5, txs6]
+assert v0.get_unconfirmed_transactions() == transactions, "transactions don't match"
+assert v1.get_unconfirmed_transactions() == transactions, "transactions don't match"
+assert v2.get_unconfirmed_transactions() == transactions, "transactions don't match"
+
+
+#leader proposes block
+leader_public_key = None
+proposal = None
+for v in validators:
+    if v.is_epoch_leader(validator_count):
+        leader_public_key, proposal = v.propose_block()
+        break
+
+proposal.print_()
+
+#send the proposed block to all other validators and voting beings
+votes = []
+for v in validators:
+    votes.append(v.voting_proposed_block(leader_public_key, proposal, validator_count))
+
+
+#broadcast votes
+for v in validators:
+    for i in range(len(votes)):
+        v.vote_receive(validators[i].get_public_key(), votes[i], validator_count)
+
+#print blockchains
+for v in validators:
+    print(v.id)
+    print(v.final_blockchain)
+    print(v.validator_blockchains)
+
+
+
+##ROUND 3
+#sleep for a while
+time.sleep(10)
+
+#add transactions
+txs7 = "transaction 7"
+txs8 = "transaction 8"
+txs9 = "transaction 9"
+v0.add_transaction(txs7)
+v0.broadcast_transaction([v1, v2], txs7)
+v1.add_transaction(txs8)
+v1.broadcast_transaction([v0, v2], txs8)
+v2.add_transaction(txs9)
+v2.broadcast_transaction([v0, v1], txs9)
+
+
+#check if transactions match
+transactions = [txs7, txs8, txs9]
+assert v0.get_unconfirmed_transactions() == transactions, "transactions don't match"
+assert v1.get_unconfirmed_transactions() == transactions, "transactions don't match"
+assert v2.get_unconfirmed_transactions() == transactions, "transactions don't match"
+
+
+#leader proposes block
+leader_public_key = None
+proposal = None
+for v in validators:
+    if v.is_epoch_leader(validator_count):
+        leader_public_key, proposal = v.propose_block()
+        break
+
+proposal.print_()
+
+#send the proposed block to all other validators and voting beings
+votes = []
+for v in validators:
+    votes.append(v.voting_proposed_block(leader_public_key, proposal, validator_count))
+
+
+#broadcast votes
+for v in validators:
+    for i in range(len(votes)):
+        v.vote_receive(validators[i].get_public_key(), votes[i], validator_count)
+
+#print blockchains
+for v in validators:
+    print(v.id)
+    for block in v.final_blockchain.blocks:
+        print(block.txs)
+    print(v.validator_blockchains)

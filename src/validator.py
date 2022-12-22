@@ -39,7 +39,7 @@ class validator:
         return True
 
     #returns the finalized blockchain
-    def output(self):
+    def final_chain(self):
         self.final_blockchain
     
     #adds a transaction to the unconfired transaction list
@@ -64,7 +64,7 @@ class validator:
         # hash_val = hasher.finalize()
         # print(hash_val)
         # print(str(hash_val) % numberValidators)
-        return  int(epoch * 10) % numberValidators
+        return  int(epoch) % numberValidators
 
     #checks if the validator is the current epoch leader
     def is_epoch_leader(self, validator_count):
@@ -101,8 +101,8 @@ class validator:
 
     #validator receives a block proposal, verifies the proposal and votes
     def voting_proposed_block(self, leader_public_key, vote, node_count):
-        assert self.get_epoch_leader(node_count) == vote.id, "Vote ID doesn't match"
-        self.verify_signature(self, vote.signature, bytes(vote.block), leader_public_key)
+        assert self.epoch_leader(node_count) == vote.id, "Vote ID doesn't match"
+        self.verify_signature(vote.signature, bytes(vote.block), leader_public_key)
         return self.vote_for(vote.block)
 
     #validator vote function
@@ -114,7 +114,7 @@ class validator:
             current_chain = blockchain(copy.deepcopy(block))
             self.validator_blockchains.append(current_chain)
         else:
-            self.validator_blockchains[index].add_block(copy.deepcopy(block))
+            self.validator_blockchains[index].add_block(copy.deepcopy(block), self.hash)
             current_chain = self.validator_blockchains[index]
 
         Vote = None
@@ -141,19 +141,21 @@ class validator:
         chain_tip = self.final_blockchain.blocks[-1]
         if not (chain_tip.get_hash(self.hash) == block.parent and block.epoch > chain_tip.epoch):
             print("get blockchain_index error")
-            return -1
+        return -1
             
 
     #find the chain in which the block lies
     def find_block(self, vote_block):
         for index, blockchain in enumerate(self.validator_blockchains):
-            for block in blockchain.blocks.reverse():
-                if vote_block.isequal(block):
-                    return (block, index)
+            if blockchain.length() > 0:
+                for block in reversed(blockchain.blocks):
+                    if vote_block.isequal(block):
+                        return (block, index)
         
-        for block in self.final_blockchain.blocks.reverse():
-            if vote_block.isequal(block):
-                return (block, -1)
+        if self.final_blockchain.length() > 0:
+            for block in reversed(self.final_blockchain.blocks):
+                if vote_block.isequal(block):
+                    return (block, -1)
 
         return None
 
@@ -169,9 +171,10 @@ class validator:
             if not block.check_vote(vote):
                 block.add_vote(copy.deepcopy(vote))
 
-            if block.is_notarized() and block.get_vote_count() > (2 * validator_count / 3):
+            if not block.is_notarized() and block.get_vote_count() > (2 * validator_count / 3):
+                print("Enough votes to noterize")
                 block.notarize()
-                self.finalize_blockchain(self, index)
+                self.finalize_blockchain(index)
         return
         
             
@@ -191,19 +194,19 @@ class validator:
                     break
             if notarized > 2:
                 finalized_blocks = []
-                for block in blockchain.blocks[:notarized]:
+                for block in blockchain.blocks[:notarized-1]:
                     block.finalize()
-                    finalized_blocks.add_block(copy.deepcopy(block))
+                    finalized_blocks.append(copy.deepcopy(block))
                     for transaction in block.txs:
                         if transaction in self.new_transactions:
                             self.new_transactions.remove(transaction)
-                blockchain.blocks = blockchain.blocks[:notarized]
+                blockchain.blocks = blockchain.blocks[:notarized-1]
                 for block in finalized_blocks:
-                    self.final_blockchain.blocks.add_block(copy.deepcopy(block))
-                tip = self.final_blockchain[-1]
+                    self.final_blockchain.add_block(copy.deepcopy(block), self.hash)
+                tip = self.final_blockchain.blocks[-1]
 
                 tip_hash = tip.get_hash(self.hash)
-                remove_chains = []
+                retain_chains = []
                 for index, chains in enumerate(self.validator_blockchains):
                     if blockchain.blocks[0].parent == tip_hash and blockchain.blocks[0].epoch > tip.epoch:
                         retain_chains.append(index)
