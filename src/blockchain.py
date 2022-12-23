@@ -37,4 +37,14 @@ class blockchain:
     def length(self):
         return len(self.blocks)
 
-        
+    def print_chain(self):
+        for i, block in enumerate(self.blocks):
+            block.print_(i)
+
+    def isequal(self, other):
+        if other.final_blockchain.length() != self.final_blockchain.length():
+            return False
+        for i in range(min(other.final_blockchain.length(), self.final_blockchain.length())):
+            if not self.final_blockchain.blocks[i].isequal(other.final_blockchain.blocks[i]):
+                return False
+        return True

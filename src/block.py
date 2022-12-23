@@ -8,9 +8,13 @@ class block:
         self.meta_data = meta_data() #any meta data to store 
 
 
-    def print_(self):
+    def print_(self, i):
+        print("_____________________")
+        print("B" + str(i))
         print("Epoch: ", self.epoch)
-        print("txs: ", self.txs)
+        print("N: ", self.meta_data.notarized, "F: ", self.meta_data.finalized)
+        print("_____________________")
+        #print("txs: ", self.txs)
         #print("parent sig: ", self.parent)
 
     #returns the instance string in the bytes format when the bytes() function is called

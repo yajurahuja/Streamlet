@@ -1,4 +1,3 @@
-#this is the first simulation and test case
 import time
 import copy
 from defaulthash import common_hash
@@ -148,7 +147,7 @@ v2.broadcast_transaction([v0, v1], txs9)
 transactions = [txs7, txs8, txs9]
 assert v0.get_unconfirmed_transactions() == transactions, "transactions don't match"
 assert v1.get_unconfirmed_transactions() == transactions, "transactions don't match"
-assert v2.get_unconfirmed_transactions() == transactions, "transactions don't match"
+#assert v2.get_unconfirmed_transactions() == transactions, "transactions don't match"
 
 
 #leader proposes block
@@ -163,12 +162,13 @@ proposal.print_()
 
 #send the proposed block to all other validators and voting beings
 votes = []
+#Byzantine behavior#
 for v in validators:
     votes.append(v.voting_proposed_block(leader_public_key, proposal, validator_count))
 
 
 #broadcast votes
-for v in validators:
+for v in validators[:-1]:
     for i in range(len(votes)):
         v.vote_receive(validators[i].get_public_key(), votes[i], validator_count)
 
@@ -181,3 +181,5 @@ for v in validators:
 print("Final Chain of v0 matches v1: ", v0.isequal(v1))
 print("Final Chain of v1 matches v2: ", v1.isequal(v2))
 print("Final Chain of v0 matches v2: ", v0.isequal(v2))
+
+# print("Length of final chain: ", v0.final_chain().length())

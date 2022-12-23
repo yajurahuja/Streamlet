@@ -41,6 +41,15 @@ class validator:
     #returns the finalized blockchain
     def final_chain(self):
         self.final_blockchain
+
+    #compare the final chains
+    def isequal(self, other):
+        if other.final_blockchain.length() != self.final_blockchain.length():
+            return False
+        for i in range(min(other.final_blockchain.length(), self.final_blockchain.length())):
+            if not self.final_blockchain.blocks[i].isequal(other.final_blockchain.blocks[i]):
+                return False
+        return True
     
     #adds a transaction to the unconfired transaction list
     def add_transaction(self, transaction):
@@ -54,7 +63,7 @@ class validator:
     #returns the current epoch
     def get_current_epoch(self):
         #TODO: fix time passing reference
-        return (time.time() - self.genesis_time) / (2 * self.delta)
+        return (time.time() - self.genesis_time) // (2 * self.delta)
 
     #returns the selected leader for the current epoch
     def epoch_leader(self, numberValidators):
@@ -171,7 +180,7 @@ class validator:
             if not block.check_vote(vote):
                 block.add_vote(copy.deepcopy(vote))
 
-            if not block.is_notarized() and block.get_vote_count() > (2 * validator_count / 3):
+            if not block.is_notarized() and block.get_vote_count() >= (2 * validator_count / 3):
                 print("Enough votes to noterize")
                 block.notarize()
                 self.finalize_blockchain(index)
